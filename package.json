@@ -1,0 +1,12 @@
+{
+  "name": "social-icons",
+  "dependencies": {
+    "del": "^2.2.0",
+    "gulp": "^3.9.1",
+    "gulp-change": "^1.0.0",
+    "gulp-plumber": "^1.1.0",
+    "gulp-svgmin": "^1.2.2",
+    "gulp-svgstore": "^6.0.0",
+    "run-sequence": "^1.2.2"
+  }
+}
