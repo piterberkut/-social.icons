@@ -9,6 +9,55 @@ var change       = require('gulp-change');
 
 
 
+var generalSymbols = '';
+var themeSymbols = '';
+
+function saveGeneralSymbols(content) {
+    generalSymbols = content.replace('<svg', '<svg style="display: none;"');
+}
+
+function saveThemeSymbols(content) {
+    themeSymbols = content.replace('<svg', '<svg style="display: none;"');
+}
+
+
+function injectGeneralSymbols(content) {
+
+    var source = content.split('\n');
+    var result = '';
+
+    source.forEach(function (line) {
+
+        if( line.indexOf('<body') !== -1 ) {
+            result += line + '\n' + '        ' + generalSymbols + '\n';
+        }
+        else {
+            result += line + '\n';
+        }
+
+    });
+
+    return result;
+}
+
+function injectThemeSymbols(content) {
+    var source = content.split('\n');
+    var result = '';
+
+    source.forEach(function (line) {
+
+        if( line.indexOf('<body') !== -1 ) {
+            result += line + '\n' + '        ' + themeSymbols + '\n';
+        }
+        else {
+            result += line + '\n';
+        }
+
+    });
+
+    return result;
+}
+
 function symbolsImgToSpriteSvg(content) {
 
     var source = content.split('\n');
@@ -77,11 +126,12 @@ function symbolsImgToSpriteSvg(content) {
 
             /* write down results */
 
-            outputLine[0] = indentString + '<svg' + ( classString ? ' ' + classString : '') + ( idString ? ' ' + idString : '') + ( widthString ? ' ' + widthString : '') + ( heightString ? ' ' + heightString : '') + '>';
-            outputLine[1] = indentString + '    ' +  '<use xlink:href="' + pathString + folder + '.svg?' + timestamp + '#' + nameString + '"></use>';
-            outputLine[2] = indentString + '</svg>';
+            outputLine[0] = '<svg' + ( classString ? ' ' + classString : '') + ( idString ? ' ' + idString : '') + ( widthString ? ' ' + widthString : '') + ( heightString ? ' ' + heightString : '') + '>';
+            outputLine[1] = '<use xlink:href="#' + nameString + '"></use>';
+            outputLine[2] = '</svg>';
 
-            result += outputLine[0] + '\n' + outputLine[1] + '\n' + outputLine[2] + '\n';
+            // result += outputLine[0] + '\n' + outputLine[1] + '\n' + outputLine[2] + '\n';
+            result += outputLine[0] + outputLine[1] + outputLine[2] + '\n';
         }
         else {
             result += line + '\n';
@@ -106,6 +156,8 @@ gulp.task('layouts', function() {
   return gulp.src('development/*.html')
       .pipe(plumber())
       .pipe(change(symbolsImgToSpriteSvg))
+      .pipe(change(injectGeneralSymbols))
+      .pipe(change(injectThemeSymbols))
       .pipe(gulp.dest('production/'))
   ;
 });
@@ -118,8 +170,8 @@ gulp.task('general', function() {
     return gulp.src('development/general/*.svg')
         .pipe(plumber())
         .pipe(svgmin())
-        .pipe(svgstore())
-        .pipe(gulp.dest('production/general/'));
+        .pipe(svgstore({ inlineSvg: true }))
+        .pipe(change(saveGeneralSymbols))
 });
 
 
@@ -129,13 +181,13 @@ gulp.task('theme', function() {
     return gulp.src('development/theme/*.svg')
         .pipe(plumber())
         .pipe(svgmin())
-        .pipe(svgstore())
-        .pipe(gulp.dest('production/theme/'));
+        .pipe(svgstore({ inlineSvg: true }))
+        .pipe(change(saveThemeSymbols))
 });
 
 
 gulp.task('default', function (fn) {
-  run('clean', 'layouts', 'general', 'theme', fn);
+  run('clean', 'general', 'theme', 'layouts', fn);
 });
 
 
