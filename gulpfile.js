@@ -172,6 +172,7 @@ gulp.task('general', function() {
         .pipe(svgmin())
         .pipe(svgstore({ inlineSvg: true }))
         .pipe(change(saveGeneralSymbols))
+        .pipe(gulp.dest('production/general/'));
 });
 
 
@@ -183,6 +184,7 @@ gulp.task('theme', function() {
         .pipe(svgmin())
         .pipe(svgstore({ inlineSvg: true }))
         .pipe(change(saveThemeSymbols))
+        .pipe(gulp.dest('production/theme/'));
 });
 
 
