@@ -14,6 +14,7 @@ function symbolsImgToSpriteSvg(content) {
     var source = content.split('\n');
     var outputLine = [];
     var result = '';
+    var folder = '';
 
     var i;
     var indentString;
@@ -29,7 +30,15 @@ function symbolsImgToSpriteSvg(content) {
 
     source.forEach(function (line) {
 
-        if( line.indexOf('symbols/') !== -1 ) {
+        if( line.indexOf('general/') !== -1 || line.indexOf('theme/') !== -1) {
+
+            if ( line.indexOf('general/') !== -1 ) {
+                folder = 'general';
+            }
+
+            if ( line.indexOf('theme/') !== -1 ) {
+                folder = 'theme';
+            }
 
             /* get indent */
 
@@ -69,7 +78,7 @@ function symbolsImgToSpriteSvg(content) {
             /* write down results */
 
             outputLine[0] = indentString + '<svg' + ( classString ? ' ' + classString : '') + ( idString ? ' ' + idString : '') + ( widthString ? ' ' + widthString : '') + ( heightString ? ' ' + heightString : '') + '>';
-            outputLine[1] = indentString + '    ' +  '<use xlink:href="' + pathString + 'symbols.svg?' + timestamp + '#' + nameString + '"></use>';
+            outputLine[1] = indentString + '    ' +  '<use xlink:href="' + pathString + folder + '.svg?' + timestamp + '#' + nameString + '"></use>';
             outputLine[2] = indentString + '</svg>';
 
             result += outputLine[0] + '\n' + outputLine[1] + '\n' + outputLine[2] + '\n';
@@ -94,7 +103,7 @@ gulp.task('clean', function() {
 // Layouts: copy and change symbols <img> to sprite <svg>
 
 gulp.task('layouts', function() {
-  return gulp.src('development/index.html')
+  return gulp.src('development/*.html')
       .pipe(plumber())
       .pipe(change(symbolsImgToSpriteSvg))
       .pipe(gulp.dest('production/'))
@@ -103,19 +112,30 @@ gulp.task('layouts', function() {
 
 
 
-// Symbols
+// general
 
-gulp.task('symbols', function() {
-    return gulp.src('development/symbols/*.svg')
+gulp.task('general', function() {
+    return gulp.src('development/general/*.svg')
         .pipe(plumber())
         .pipe(svgmin())
         .pipe(svgstore())
-        .pipe(gulp.dest('production/symbols/'));
+        .pipe(gulp.dest('production/general/'));
+});
+
+
+// theme
+
+gulp.task('theme', function() {
+    return gulp.src('development/theme/*.svg')
+        .pipe(plumber())
+        .pipe(svgmin())
+        .pipe(svgstore())
+        .pipe(gulp.dest('production/theme/'));
 });
 
 
 gulp.task('default', function (fn) {
-  run('clean', 'layouts', 'symbols', fn);
+  run('clean', 'layouts', 'general', 'theme', fn);
 });
 
 
