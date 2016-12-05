@@ -11,6 +11,7 @@ var change       = require('gulp-change');
 
 var generalSymbols = '';
 var themeSymbols = '';
+var flagSymbols = '';
 
 function saveGeneralSymbols(content) {
     generalSymbols = content.replace('<svg', '<svg style="display: none;"');
@@ -18,6 +19,10 @@ function saveGeneralSymbols(content) {
 
 function saveThemeSymbols(content) {
     themeSymbols = content.replace('<svg', '<svg style="display: none;"');
+}
+
+function saveFlagSymbols(content) {
+    flagSymbols = content.replace('<svg', '<svg style="display: none;"');
 }
 
 
@@ -58,6 +63,24 @@ function injectThemeSymbols(content) {
     return result;
 }
 
+function injectFlagSymbols(content) {
+    var source = content.split('\n');
+    var result = '';
+
+    source.forEach(function (line) {
+
+        if( line.indexOf('<body') !== -1 ) {
+            result += line + '\n' + '        ' + flagSymbols + '\n';
+        }
+        else {
+            result += line + '\n';
+        }
+
+    });
+
+    return result;
+}
+
 function symbolsImgToSpriteSvg(content) {
 
     var source = content.split('\n');
@@ -79,7 +102,7 @@ function symbolsImgToSpriteSvg(content) {
 
     source.forEach(function (line) {
 
-        if( line.indexOf('general/') !== -1 || line.indexOf('theme/') !== -1) {
+        if( line.indexOf('general/') !== -1 || line.indexOf('theme/') !== -1 || line.indexOf('flag/') !== -1 ) {
 
             if ( line.indexOf('general/') !== -1 ) {
                 folder = 'general';
@@ -87,6 +110,10 @@ function symbolsImgToSpriteSvg(content) {
 
             if ( line.indexOf('theme/') !== -1 ) {
                 folder = 'theme';
+            }
+
+            if ( line.indexOf('flag/') !== -1 ) {
+                folder = 'flag';
             }
 
             /* get indent */
@@ -158,6 +185,7 @@ gulp.task('layouts', function() {
       .pipe(change(symbolsImgToSpriteSvg))
       .pipe(change(injectGeneralSymbols))
       .pipe(change(injectThemeSymbols))
+      .pipe(change(injectFlagSymbols))
       .pipe(gulp.dest('production/'))
   ;
 });
@@ -188,8 +216,20 @@ gulp.task('theme', function() {
 });
 
 
+// flag
+
+gulp.task('flag', function() {
+    return gulp.src('development/flag/*.svg')
+        .pipe(plumber())
+        .pipe(svgmin())
+        .pipe(svgstore({ inlineSvg: true }))
+        .pipe(change(saveFlagSymbols))
+        .pipe(gulp.dest('production/flag/'));
+});
+
+
 gulp.task('default', function (fn) {
-  run('clean', 'general', 'theme', 'layouts', fn);
+  run('clean', 'general', 'theme', 'flag', 'layouts', fn);
 });
 
 
